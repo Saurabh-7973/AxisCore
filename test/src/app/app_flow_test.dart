@@ -17,11 +17,33 @@ Future<void> pumpAxisCoreApp(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> signInLocally(WidgetTester tester) async {
+  expect(find.text('Sign in to AxisCore'), findsOneWidget);
+  await tester.enterText(
+    find.byKey(const Key('auth-email-field')),
+    'user@test.com',
+  );
+  await tester.enterText(
+    find.byKey(const Key('auth-password-field')),
+    'control90',
+  );
+  await tester.tap(find.text('Sign in'));
+  await tester.pumpAndSettle();
+}
+
 void main() {
+  testWidgets('unauthenticated users start on the auth screen', (tester) async {
+    await pumpAxisCoreApp(tester);
+
+    expect(find.text('Sign in to AxisCore'), findsOneWidget);
+    expect(find.text('Build your 90-day foundation'), findsNothing);
+  });
+
   testWidgets('onboarding result leads into the home dashboard', (
     tester,
   ) async {
     await pumpAxisCoreApp(tester);
+    await signInLocally(tester);
 
     expect(find.text('AxisCore'), findsWidgets);
     expect(find.text('Build your 90-day foundation'), findsOneWidget);
@@ -41,6 +63,7 @@ void main() {
 
   testWidgets('daily protocol completion updates progress', (tester) async {
     await pumpAxisCoreApp(tester);
+    await signInLocally(tester);
     await tester.tap(find.text('Build my plan'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Enter dashboard'));
@@ -65,6 +88,7 @@ void main() {
 
   testWidgets('panic flow logs a breathing reset event', (tester) async {
     await pumpAxisCoreApp(tester);
+    await signInLocally(tester);
     await tester.tap(find.text('Build my plan'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Enter dashboard'));
@@ -80,5 +104,19 @@ void main() {
 
     expect(find.text('Reset started'), findsOneWidget);
     expect(find.text('Events logged: 1'), findsOneWidget);
+  });
+
+  testWidgets('sign out returns to the auth screen', (tester) async {
+    await pumpAxisCoreApp(tester);
+    await signInLocally(tester);
+    await tester.tap(find.text('Build my plan'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Enter dashboard'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.logout_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sign in to AxisCore'), findsOneWidget);
   });
 }

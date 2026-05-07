@@ -1,4 +1,5 @@
 import 'package:axiscore/src/features/session/application/app_session_controller.dart';
+import 'package:axiscore/src/features/auth/application/auth_controller.dart';
 import 'package:axiscore/src/shared/ui/metric_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +23,19 @@ class HomeScreen extends ConsumerWidget {
           style: theme.textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.w800,
             color: theme.colorScheme.primary,
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: IconButton(
+            tooltip: 'Sign out',
+            onPressed: () async {
+              await ref.read(authControllerProvider.notifier).signOut();
+              if (context.mounted) {
+                context.go('/auth');
+              }
+            },
+            icon: const Icon(Icons.logout_rounded),
           ),
         ),
         const SizedBox(height: 6),
